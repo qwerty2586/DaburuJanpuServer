@@ -1,0 +1,9 @@
+
+#ifndef DABURUJANPUSERVER_CLIENT_H
+#define DABURUJANPUSERVER_CLIENT_H
+
+class Client {
+    
+};
+
+#endif //DABURUJANPUSERVER_CLIENT_H
