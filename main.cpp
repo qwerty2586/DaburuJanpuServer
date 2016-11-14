@@ -6,7 +6,7 @@
 int main() {
     Server *s = new Server();
     s->start(5000);
-    s->loop();
+    s->command_loop();
 
 
 
