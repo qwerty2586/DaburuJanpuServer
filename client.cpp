@@ -1,8 +1,12 @@
-
+#ifdef __linux__
+#include <zconf.h>
+#else
+#include <unistd.h>
+#endif
 #include <thread>
 #include <sys/socket.h>
 #include <iostream>
-#include <unistd.h>
+
 #include "client.h"
 
 

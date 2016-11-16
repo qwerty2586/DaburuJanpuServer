@@ -1,12 +1,19 @@
+#ifdef __linux__
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <zconf.h>
+#else
 #include <pthread.h>
-#include <iostream>
 #include <cygwin/socket.h>
 #include <sys/socket.h>
-#include <cstring>
 #include <asm/byteorder.h>
 #include <cygwin/in.h>
 #include <unistd.h>
+#endif
 #include <thread>
+#include <iostream>
+#include <cstring>
+
 #include "server.h"
 #include "string_functions.h"
 #include "lobby_utils.h"

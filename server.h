@@ -2,7 +2,10 @@
 #ifndef DABURUJANPUSERVER_SERVER_H
 #define DABURUJANPUSERVER_SERVER_H
 
+#ifndef __linux__
 #include <elf.h>
+#endif
+
 #include "client_list.h"
 
 const static int DEFAULT_PORT = 1234;
