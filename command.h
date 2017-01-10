@@ -25,6 +25,22 @@ namespace Commands {
     static const int SET_READY = 19;
     static const int CHANGE_COLOR = 20;
 
+    static const int GAME_STARTED = 30;
+    static const int READY_FOR_GAME_INFO = 31;
+    static const int GAME_INFO = 32;
+    static const int ROUND_LOADED = 33;
+    static const int ROUND_START = 34;
+    static const int MY_UPDATE = 35;
+    static const int LEAVE_GAME = 36;
+    static const int GAME_INFO_SEED = 37;
+
+    static const int INTERNAL_GAME_INIT = -2;
+
+
+
+
+
+
     static const int SUCCESS = 1;
     static const int FAIL = 0;
 }

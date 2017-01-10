@@ -65,5 +65,18 @@ int find_unused_color(ClientList *lobby, int start_color, int max_color) {
     return start_color;
 }
 
+bool is_lobby_ready(ClientList *lobby) {
+
+    lobby->search_lock();
+    for ( Client *client : lobby->get_list() ) {
+        if (!client->is_ready()) {
+            lobby->search_unlock();
+            return false;
+        }
+    }
+    lobby->search_unlock();
+    return true;
+}
+
 
 

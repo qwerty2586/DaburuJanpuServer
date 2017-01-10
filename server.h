@@ -7,6 +7,7 @@
 #endif
 
 #include "client_list.h"
+#include "game.h"
 
 const static int DEFAULT_PORT = 1234;
 
@@ -30,7 +31,8 @@ private:
     ClientList no_lobby;
     ClientList disconecteds;
     std::vector<ClientList *> lobbies;
-    CommandQueue *commandQueue;
+    std::vector<Game *> games;
+    CommandQueue *command_queue;
     int last_lobby_id = 0;
 
     void delete_dead_lobby(ClientList *lobby);

@@ -22,7 +22,7 @@
 
 Server::Server() {
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
-    commandQueue = new CommandQueue();
+    command_queue = new CommandQueue();
 
 }
 
@@ -75,8 +75,8 @@ bool Server::isRunning() {
 void Server::command_loop() {
     while (1) {
 
-        commandQueue->wait_for_nonempty();
-        Command *command = commandQueue->remove();
+        command_queue->wait_for_nonempty();
+        Command *command = command_queue->remove();
         std::cout << "command loop " << command->code << std::endl;
         if (!command) continue;
         switch (command->code) {
@@ -130,6 +130,7 @@ void Server::command_loop() {
                 lobby->set_id(++last_lobby_id);
                 lobbies.push_back(lobby);
                 command->sender->get_client_list()->remove(command->sender);
+                command->sender->set_ready(false);
                 lobby->add(command->sender);
                 command->sender->set_client_list(lobby);
                 command->sender->send_command((new Command(Commands::RESULT_CREATE_LOBBY))->addArg(Commands::SUCCESS));
@@ -142,6 +143,7 @@ void Server::command_loop() {
                 ClientList *lobby = get_lobby_by_id(lobbies, id);
                 if (lobby) {
                     if (lobby->add(command->sender)) { // fail znamena ze se prekrocila kapacita lobby
+                        command->sender->set_ready(false);
                         no_lobby.remove(command->sender);
                         command->sender->set_client_list(lobby);
                         command->sender->set_color(find_unused_color(lobby,0,ClientList::MAX_COLOR));
@@ -193,6 +195,23 @@ void Server::command_loop() {
                 if (old_color!=new_color) {
                     command->sender->set_color(new_color);
                     update_lobby_changes(command->sender->get_client_list()); //dame vedet ze si nekdo zmenil barvicku
+                }
+                break;
+            }
+
+            case Commands::SET_READY : {
+                command->sender->set_ready(!command->sender->is_ready());
+                update_lobby_changes(command->sender->get_client_list());
+                if (is_lobby_ready(command->sender->get_client_list())) {
+                    Game *game = new Game();
+                    game->eat_lobby(command->sender->get_client_list());
+                    game->set_player_return(&no_lobby,command_queue);
+                    game->start();
+                    games.push_back(game);
+
+                    delete_dead_lobby(command->sender->get_client_list());
+                    update_no_lobby_changes(); //reknem klientum ze uz neni
+
                 }
             }
 
@@ -304,7 +323,7 @@ void Server::accepting_loop() {
                                     send(client_sock, output.c_str(), output.length(), 0);
                                     no_lobby.add(c);
                                     c->set_client_list(&no_lobby);
-                                    c->set_server_command_queue(commandQueue);
+                                    c->set_server_command_queue(command_queue);
                                     c->spawn_threads();
                                 } else {
                                     error = true;
@@ -330,7 +349,7 @@ void Server::accepting_loop() {
 
 Server::~Server() {
     if (isRunning()) stop();
-    delete commandQueue;
+    delete command_queue;
 }
 
 
