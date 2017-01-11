@@ -42,6 +42,10 @@ private:
 
     int update_treshold;
     int unresponded_updates = 0;
+
+    void camera_move();
+
+    int camerapos = 0;
 };
 
 #endif //DABURUJANPUSERVER_GAME_H

@@ -66,6 +66,7 @@ void Game::game_loop() {
             }
             case Commands::HW_DISCONNECT : {
                 // neco se musi delat tady
+                command->sender->send_command(new Command(Commands::HW_DISCONNECT));
                 break;
             }
             case Commands::READY_FOR_GAME_INFO: {
@@ -92,13 +93,25 @@ void Game::game_loop() {
                 player_stats[i].update(command->args);
                 unresponded_updates ++ ;
                 if (unresponded_updates>=update_treshold) {
+                    camera_move();
                     std::string game_info=get_game_info();
                     for (int j = 0; j < players->get_list().size(); ++j) {
                         players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
                     }
+
+                    //if (check_reset_conditions()) {}
                 }
-
-
+                break;
+            }
+            case Commands::LEAVE_GAME: {
+                int i=0;
+                while (command->sender != player_stats[i].client) i++;
+                player_stats[i].unlink_client();
+                players->remove(command->sender);
+                command->sender->set_server_command_queue(server_command_queue);
+                server_no_lobby->add(command->sender);
+                update_treshold = (int)( players->get_list().size() + 1 )/ 2;
+                break;
             }
 
 
@@ -122,5 +135,31 @@ std::string Game::get_game_info() {
     for (int i = 0; i < player_stats.size(); ++i) {
         ss << DEFAULT_DELIMITER << player_stats[i].get_stat_string();
     }
+    ss << DEFAULT_DELIMITER << camerapos;
     return ss.str();
+}
+
+void Game::camera_move() {
+    int count=0;
+    int center_of_mass=0;
+    for (PlayerStats st :player_stats) {
+        if (!st.dead()) {
+            count++;
+            center_of_mass+=st.y();
+        }
+    }
+
+    if (count>0) {center_of_mass = center_of_mass / count;}
+
+    if (center_of_mass > camerapos) {
+        camerapos += (center_of_mass - camerapos) / 4;
+    }
+
+    for (PlayerStats &st :player_stats) {
+        if (camerapos-200 > st.y()) {
+            st.stats[PlayerStats::I_DEAD] = "1"; //zabijem hrace
+        }
+    }
+
+
 }

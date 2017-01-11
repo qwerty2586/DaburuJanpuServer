@@ -12,6 +12,4 @@ int main(int argc, char** args) {
     else s->start(DEFAULT_PORT);
     s->command_loop();
 
-
-
 }

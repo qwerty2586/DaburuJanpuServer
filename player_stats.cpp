@@ -21,8 +21,6 @@ void PlayerStats::set_client(Client *c) {
     stats[13] = "0"; //speedx
     stats[14] = "0"; //speedy
     stats[15] = "0"; //MAXSTEP
-
-
 }
 
 std::string PlayerStats::get_stat_string() {
@@ -38,4 +36,20 @@ void PlayerStats::update(std::vector<std::string> data) {
     for (int i = 0; i < STATS_LENGTH; ++i) {
         stats[i] = data[i];
     }
+}
+
+int PlayerStats::y() {
+    std::stoi(stats[I_Y]);
+}
+
+int PlayerStats::max_step() {
+    std::stoi(stats[I_MAX_STEP]);
+}
+
+bool PlayerStats::dead() {
+    return (stats[I_DEAD].at(0) == '1');
+}
+
+void PlayerStats::unlink_client() {
+    client = NULL;
 }
