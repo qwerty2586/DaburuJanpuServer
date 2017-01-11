@@ -36,7 +36,8 @@ std::string PlayerStats::get_stat_string() {
 
 void PlayerStats::update(std::vector<std::string> data) {
     for (int i = 0; i < STATS_LENGTH; ++i) {
-        stats[i] = data[i];
+        if (i!=I_DEAD) // protoze nechceme aby nam klienti predhazovali ze sou mrtvy kdyz nejsou
+            stats[i] = data[i];
     }
 }
 
