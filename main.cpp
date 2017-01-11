@@ -1,8 +1,9 @@
+#include <stdlib.h>
 #include "server.h"
 
 // ダブル ジャンプ
 
-#define DEFAULT_PORT 5000
+#define DEFAULT_PORT 5001
 
 int main(int argc, char** args) {
     Server *s = new Server();

@@ -91,8 +91,8 @@ void Client::sending_loop() {
         size_buffer[0] = (char)(size / 256) ;
         size_buffer[1] = (char)(size % 256) ;
         const char *xx = string.c_str();
-        send(sock_out,size_buffer,SIZE_BYTES,0);
-        send(sock_out,string.c_str(),size,0);
+        ssize_t len = send(sock_out,size_buffer,SIZE_BYTES,0);
+        if (len>=0) send(sock_out,string.c_str(),size,0);
         delete command;
     }
 }
