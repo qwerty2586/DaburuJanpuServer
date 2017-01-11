@@ -21,6 +21,7 @@ public:
 
     std::string get_stat_string();
     void update(std::vector<std::string> data);
+    void move_to_00();
 
     int y();
     int max_step();

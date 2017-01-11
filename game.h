@@ -46,6 +46,8 @@ private:
     void camera_move();
 
     int camerapos = 0;
+
+    bool check_reset_conditions();
 };
 
 #endif //DABURUJANPUSERVER_GAME_H

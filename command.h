@@ -33,6 +33,7 @@ namespace Commands {
     static const int MY_UPDATE = 35;
     static const int LEAVE_GAME = 36;
     static const int GAME_INFO_SEED = 37;
+    static const int GAME_NEW_ROUND = 38;
 
     static const int INTERNAL_GAME_INIT = -2;
 

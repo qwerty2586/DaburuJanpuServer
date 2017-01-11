@@ -55,6 +55,7 @@ void Game::game_loop() {
 
         command_queue->wait_for_nonempty();
         Command *command = command_queue->remove();
+        if (!command) continue;
         std::cout << "game loop " << command->code << std::endl;
         if (!command) continue;
         switch (command->code) {
@@ -67,6 +68,7 @@ void Game::game_loop() {
             case Commands::HW_DISCONNECT : {
                 // neco se musi delat tady
                 command->sender->send_command(new Command(Commands::HW_DISCONNECT));
+                players->remove(command->sender);
                 break;
             }
             case Commands::READY_FOR_GAME_INFO: {
@@ -83,8 +85,10 @@ void Game::game_loop() {
                         players->get_list()[i]->send_command(
                                 new Command(Commands::ROUND_START));
                     }
+                    ready_count=0;
                 }
                 players->search_unlock();
+
                 break;
             }
             case Commands::MY_UPDATE: { //update od hrace
@@ -99,7 +103,21 @@ void Game::game_loop() {
                         players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
                     }
 
-                    //if (check_reset_conditions()) {}
+                    if (check_reset_conditions()) {
+                        for (int j = 0; j < player_stats.size(); ++j) {
+                            player_stats[j].move_to_00();
+                        }
+                        camerapos = 0;
+                        std::string game_info=get_game_info();
+                        for (int j = 0; j < players->get_list().size(); ++j) {
+                            players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
+                        }
+                        for (int i = 0; i < players->get_list().size(); ++i) {
+                            players->get_list()[i]->send_command(
+                                    new Command(Commands::GAME_NEW_ROUND));
+                        }
+
+                    }
                 }
                 break;
             }
@@ -117,6 +135,9 @@ void Game::game_loop() {
 
         }
     }
+
+    std::cout << "game loop stop" << std::endl;
+
 
 }
 
@@ -162,4 +183,12 @@ void Game::camera_move() {
     }
 
 
+}
+
+bool Game::check_reset_conditions() {
+    int living = 0;
+    for (PlayerStats st :player_stats) {
+        if (!st.dead() && st.client!=NULL) {living++;}
+    }
+    return living<1; // v produkcni verzi 1
 }

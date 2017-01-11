@@ -77,8 +77,8 @@ void Server::command_loop() {
 
         command_queue->wait_for_nonempty();
         Command *command = command_queue->remove();
-        std::cout << "command loop " << command->code << std::endl;
         if (!command) continue;
+        std::cout << "command loop " << command->code << std::endl;
         switch (command->code) {
 
             case Commands::HW_DISCONNECT : {
