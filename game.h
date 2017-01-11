@@ -8,6 +8,7 @@
 #define SEED_LENGTH 256
 #define STEPS_TYPE_COUNT 16
 #define STEPS_RESERVED_TYPES_COUNT 2
+#define ROUNDS_COUNT 10
 
 class Game {
 public:
@@ -23,10 +24,10 @@ private:
     ClientList *players;
     std::vector<PlayerStats> player_stats;
 
-    //server
-       ClientList *server_no_lobby;
-       CommandQueue *server_command_queue;
-    //
+    /// pro navrat do lobbyn
+    ClientList *server_no_lobby;
+    CommandQueue *server_command_queue;
+
 
     void generate_seed();
     void get_player_info();
@@ -46,6 +47,7 @@ private:
     void camera_move();
 
     int camerapos = 0;
+    int round = 0;
 
     bool check_reset_conditions();
 };

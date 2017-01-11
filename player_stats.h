@@ -26,6 +26,7 @@ public:
     int y();
     int max_step();
     bool dead();
+    int score = 0;
 
 };
 

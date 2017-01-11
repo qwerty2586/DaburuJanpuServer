@@ -1,5 +1,4 @@
 #include "string_functions.h"
-
 #include <sstream>
 #include <iomanip>
 

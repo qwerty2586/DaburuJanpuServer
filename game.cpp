@@ -84,6 +84,7 @@ void Game::game_loop() {
                     for (int i = 0; i < players->get_list().size(); ++i) {
                         players->get_list()[i]->send_command(
                                 new Command(Commands::ROUND_START));
+                        round++;
                     }
                     ready_count=0;
                 }
@@ -179,6 +180,11 @@ void Game::camera_move() {
     for (PlayerStats &st :player_stats) {
         if (camerapos-200 > st.y()) {
             st.stats[PlayerStats::I_DEAD] = "1"; //zabijem hrace
+            for (PlayerStats &st2 :player_stats) {
+                if (st.client != st2.client != NULL  && !st2.dead()) {
+                    st2.score++; // pri zabiti hrace ostatni hraci dostanou score
+                }
+            }
         }
     }
 

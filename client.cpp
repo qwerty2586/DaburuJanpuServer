@@ -10,6 +10,7 @@
 #include <sys/socket.h>
 
 #include "client.h"
+#include "statistics.h"
 
 
 void Client::add_first_socket(int socket) {
@@ -60,6 +61,7 @@ void Client::receving_loop() {
         size = ((size_t)size_buffer[0] << 8) + size_buffer[1];
         char message_buffer[size];
         recv(sock_in,message_buffer,size,0);
+        Statistics::add_in(size + 2);
         auto command = Command::fromText(this,std::string(message_buffer,size));
         if (command) {
             serverCommandQueue->add(command);
@@ -93,6 +95,7 @@ void Client::sending_loop() {
         const char *xx = string.c_str();
         ssize_t len = send(sock_out,size_buffer,SIZE_BYTES,0);
         if (len>=0) send(sock_out,string.c_str(),size,0);
+        Statistics::add_out(size+2);
         delete command;
     }
 }
