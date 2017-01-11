@@ -211,7 +211,6 @@ void Server::command_loop() {
 
                     delete_dead_lobby(command->sender->get_client_list());
                     update_no_lobby_changes(); //reknem klientum ze uz neni
-
                 }
             }
 

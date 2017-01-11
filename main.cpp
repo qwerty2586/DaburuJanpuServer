@@ -2,10 +2,13 @@
 
 // ダブル ジャンプ
 
+#define DEFAULT_PORT 5000
 
-int main() {
+int main(int argc, char** args) {
     Server *s = new Server();
-    s->start(5000);
+    if (argc>1)
+        s->start(atoi(args[1]));
+    else s->start(DEFAULT_PORT);
     s->command_loop();
 
 

@@ -9,13 +9,12 @@
 #include "client_list.h"
 #include "game.h"
 
-const static int DEFAULT_PORT = 1234;
+
 
 class Server {
 public:
     explicit Server();
     int start(int port);
-    void start() { start(DEFAULT_PORT); }
     void stop();
     ~Server();
     bool isRunning();
