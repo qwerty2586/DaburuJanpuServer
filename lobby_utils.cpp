@@ -1,6 +1,7 @@
 #include <sstream>
 #include "lobby_utils.h"
 #include "string_functions.h"
+#include "statistics.h"
 
 
 std::string lobby_list(std::vector<ClientList *> &lobbies) {
@@ -76,6 +77,16 @@ bool is_lobby_ready(ClientList *lobby) {
     }
     lobby->search_unlock();
     return true;
+}
+
+std::string get_statistics() {
+    std::stringstream ss;
+    ss << "!SERVER STATISTICS" << std::endl;
+    ss << "INCOMING  MESSAGES: " << Statistics::get_in_messages() << std::endl;
+    ss << "INCOMING  BYTES:    " << Statistics::get_in_bytes() << std::endl;
+    ss << "OUTCOMING MESSAGES: " << Statistics::get_out_messages() << std::endl;
+    ss << "OUTCOMING BYTES:    " << Statistics::get_out_bytes() << std::endl;
+    return ss.str();
 }
 
 

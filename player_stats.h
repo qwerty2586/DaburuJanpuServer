@@ -8,6 +8,9 @@
 
 class PlayerStats {
 public:
+    static const int I_ID = 0;
+    static const int I_NAME = 1;
+    static const int I_COLOR = 2;
     static const int I_Y = 6;
     static const int I_MAX_STEP = 15;
     static const int I_DEAD = 12; // kurva todle premenovat
@@ -27,6 +30,8 @@ public:
     int max_step();
     bool dead();
     int score = 0;
+    int max_max_step = 0; // napric kolama
+
 
 };
 

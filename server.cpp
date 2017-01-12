@@ -88,7 +88,7 @@ void Server::command_loop() {
                 disconecteds.add(c);
                 c->set_client_list(&disconecteds);
                 c->send_command(new Command(Commands::HW_DISCONNECT)); // reknem odesilacimu thredu aby se ukoncil
-                if (lobby->empty() && lobby != &no_lobby) {
+                if (lobby->empty() && lobby->get_id() != -1) {
                    delete_dead_lobby(lobby);
                    update_no_lobby_changes(); //reknem klientum ze uz neni tato lobby
                 }
@@ -212,7 +212,43 @@ void Server::command_loop() {
                     delete_dead_lobby(command->sender->get_client_list());
                     update_no_lobby_changes(); //reknem klientum ze uz neni
                 }
+                break;
             }
+            case Commands::SHOW_SERVER_STATISTICS : {
+                std::string s = get_statistics();
+                std::cout << s;
+                command->sender->send_command((new Command(Commands::SERVER_STATISTICS))->addArg(s));
+                break;
+            }
+            case Commands::GAME_RECONNECT_ASK : {
+                int id = stoi(command->args[0]);
+                for (Game *game : games) {
+                    if (!game->game_ended()) {
+                        if (game->check_reconnect_id(id)) {
+                            command->sender->send_command((new Command(Commands::GAME_RECONNECT_ASK_RESULT))->addArg(1));
+                            break;
+                        }
+                    }
+                }
+                command->sender->send_command((new Command(Commands::GAME_RECONNECT_ASK_RESULT))->addArg(0));
+                break;
+            }
+            case Commands::GAME_RECONNECT_DO : {
+                int id = stoi(command->args[0]);
+                for (Game *game : games) {
+                    if (!game->game_ended()) {
+                        if (game->check_reconnect_id(id)) {
+                            command->sender->send_command((new Command(Commands::GAME_RECONNECT_DO_RESULT))->addArg(1));
+                            no_lobby.remove(command->sender);
+                            game->reconnect_client(command->sender,id);
+                            break;
+                        }
+                    }
+                }
+                command->sender->send_command((new Command(Commands::GAME_RECONNECT_DO_RESULT))->addArg(0));
+                break;
+            }
+
 
 
         }
@@ -234,7 +270,8 @@ void Server::update_no_lobby_changes() {
     std::string arg = lobby_list(lobbies);
     no_lobby.search_lock(); // zrovna tady se hodi locknout protoze muzed prijit accept loop a hodit tam dalsiho klienta
     for (Client *c : no_lobby.get_list()) {
-        c->send_command((new Command(Commands::LOBBY_LIST))->addArg(arg));
+       c->send_command((new Command(Commands::LOBBY_LIST))->addArg(arg));
+
     }
     no_lobby.search_unlock();
 }

@@ -41,7 +41,7 @@ void Game::start() {
         player_stats[player_stats.size() - 1].set_client(c);
     }
 
-    update_treshold = (int)( players->get_list().size() + 1 )/ 2;
+    update_treshold = (int) (players->get_list().size() + 1) / 2;
 
     auto t = std::thread([&]() { this->game_loop(); });
     t.detach();
@@ -84,32 +84,40 @@ void Game::game_loop() {
                     for (int i = 0; i < players->get_list().size(); ++i) {
                         players->get_list()[i]->send_command(
                                 new Command(Commands::ROUND_START));
-                        round++;
+
                     }
-                    ready_count=0;
+                    ready_count = 0;
                 }
                 players->search_unlock();
 
                 break;
             }
             case Commands::MY_UPDATE: { //update od hrace
-                int i=0;
+                int i = 0;
                 while (command->sender != player_stats[i].client) i++;
                 player_stats[i].update(command->args);
-                unresponded_updates ++ ;
-                if (unresponded_updates>=update_treshold) {
+                unresponded_updates++;
+                if (unresponded_updates >= update_treshold) {
                     camera_move();
-                    std::string game_info=get_game_info();
+                    std::string game_info = get_game_info();
                     for (int j = 0; j < players->get_list().size(); ++j) {
                         players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
                     }
 
                     if (check_reset_conditions()) {
+                        if (game_ended()) {
+                            std::string result = get_result_info();
+                            for (int i = 0; i < players->get_list().size(); ++i) {
+                                players->get_list()[i]->send_command(
+                                        (new Command(Commands::GAME_RESULT))->addArg(result));
+                            }
+                            break;
+                        }
                         for (int j = 0; j < player_stats.size(); ++j) {
                             player_stats[j].move_to_00();
                         }
                         camerapos = 0;
-                        std::string game_info=get_game_info();
+                        std::string game_info = get_game_info();
                         for (int j = 0; j < players->get_list().size(); ++j) {
                             players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
                         }
@@ -117,19 +125,21 @@ void Game::game_loop() {
                             players->get_list()[i]->send_command(
                                     new Command(Commands::GAME_NEW_ROUND));
                         }
+                        round++;
 
                     }
                 }
                 break;
             }
             case Commands::LEAVE_GAME: {
-                int i=0;
+                int i = 0;
                 while (command->sender != player_stats[i].client) i++;
                 player_stats[i].unlink_client();
                 players->remove(command->sender);
                 command->sender->set_server_command_queue(server_command_queue);
                 server_no_lobby->add(command->sender);
-                update_treshold = (int)( players->get_list().size() + 1 )/ 2;
+                command->sender->set_client_list(server_no_lobby);
+                update_treshold = (int) (players->get_list().size() + 1) / 2;
                 break;
             }
 
@@ -138,6 +148,8 @@ void Game::game_loop() {
     }
 
     std::cout << "game loop stop" << std::endl;
+    round = ROUNDS_COUNT + 1; // aby nebyla hra listovana jako ziva
+
 
 
 }
@@ -162,26 +174,27 @@ std::string Game::get_game_info() {
 }
 
 void Game::camera_move() {
-    int count=0;
-    int center_of_mass=0;
+    int count = 0;
+    int center_of_mass = 0;
     for (PlayerStats st :player_stats) {
         if (!st.dead()) {
             count++;
-            center_of_mass+=st.y();
+            center_of_mass += st.y();
         }
     }
 
-    if (count>0) {center_of_mass = center_of_mass / count;}
+    if (count > 0) { center_of_mass = center_of_mass / count; }
 
     if (center_of_mass > camerapos) {
         camerapos += (center_of_mass - camerapos) / 4;
     }
 
     for (PlayerStats &st :player_stats) {
-        if (camerapos-200 > st.y()) {
+        if (camerapos - 200 > st.y() && (stoi(st.stats[PlayerStats::I_DEAD])==0)) {
             st.stats[PlayerStats::I_DEAD] = "1"; //zabijem hrace
+            if (st.max_step()>st.max_max_step) st.max_max_step = st.max_step();
             for (PlayerStats &st2 :player_stats) {
-                if (st.client != st2.client != NULL  && !st2.dead()) {
+                if ((st.client != st2.client) && ( st2.client != NULL) && !st2.dead()) {
                     st2.score++; // pri zabiti hrace ostatni hraci dostanou score
                 }
             }
@@ -194,7 +207,48 @@ void Game::camera_move() {
 bool Game::check_reset_conditions() {
     int living = 0;
     for (PlayerStats st :player_stats) {
-        if (!st.dead() && st.client!=NULL) {living++;}
+        if (!st.dead() && st.client != NULL) { living++; }
     }
-    return living<1; // v produkcni verzi 1
+    return living < 1; // v produkcni verzi 1
+}
+
+bool Game::game_ended() {
+    return (round >= ROUNDS_COUNT);
+}
+
+std::string Game::get_result_info() {
+    std::stringstream ss;
+    ss << player_stats.size();
+    for (PlayerStats st :player_stats) {
+        ss << DEFAULT_DELIMITER << st.stats[PlayerStats::I_ID];
+        ss << DEFAULT_DELIMITER << st.stats[PlayerStats::I_NAME];
+        ss << DEFAULT_DELIMITER << st.score;
+        ss << DEFAULT_DELIMITER << st.max_max_step;
+        if (st.client == NULL) {
+            ss << DEFAULT_DELIMITER << "1";
+        } else {
+            ss << DEFAULT_DELIMITER << "0";
+        }
+    }
+    return ss.str();
+}
+
+bool Game::check_reconnect_id(int id) {
+    for (PlayerStats ps : player_stats) {
+        if (stoi(ps.stats[PlayerStats::I_ID])==id) return true;
+    }
+    return false;
+}
+
+void Game::reconnect_client(Client *client, int old_id) {
+    //bezi v jinem treadu bacha, chtelo by to prepsat aby se tu poslal zprava misto toho
+    for (PlayerStats &ps : player_stats) {
+        if (stoi(ps.stats[PlayerStats::I_ID])==old_id) {
+            client->set_color(stoi(ps.stats[PlayerStats::I_COLOR]));
+            ps.set_client(client);
+            players->add(client);
+            client->set_server_command_queue(command_queue);
+        }
+    }
+
 }

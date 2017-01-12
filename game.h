@@ -8,15 +8,20 @@
 #define SEED_LENGTH 256
 #define STEPS_TYPE_COUNT 16
 #define STEPS_RESERVED_TYPES_COUNT 2
-#define ROUNDS_COUNT 10
 
 class Game {
 public:
+    static const int ROUNDS_COUNT = 3;
     explicit Game();
     void eat_lobby(ClientList *lobby);
     void set_player_return(ClientList *server_no_lobby,CommandQueue *server_command_queue);
     void start();
+    bool game_ended();
 
+
+    bool check_reconnect_id(int id);
+
+    void reconnect_client(Client *client, int old_id);
 
 private:
 
@@ -50,6 +55,10 @@ private:
     int round = 0;
 
     bool check_reset_conditions();
+
+
+
+    std::string get_result_info();
 };
 
 #endif //DABURUJANPUSERVER_GAME_H
