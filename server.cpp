@@ -22,11 +22,16 @@
 
 Server::Server() {
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
+
     command_queue = new CommandQueue();
 
 }
 
 int Server::start(int port) {
+
+    int enable_flag = 1;
+    if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &enable_flag, sizeof(int)) < 0)
+        printf("setsockopt(SO_REUSEADDR) failed");
 
     struct sockaddr_in local_addr;
     memset(&local_addr, 0, sizeof(struct sockaddr_in));
