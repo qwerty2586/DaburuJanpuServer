@@ -218,7 +218,7 @@ bool Game::check_reset_conditions() {
         block_reset = true;
         return true;
     }
-    return living < 1; // v produkcni verzi 1
+    return false; // v produkcni verzi 1
 }
 
 bool Game::game_ended() {
