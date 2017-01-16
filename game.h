@@ -35,7 +35,6 @@ private:
 
 
     void generate_seed();
-    void get_player_info();
     std::string get_seed_info();
     void game_loop();
 
@@ -54,11 +53,15 @@ private:
     int camerapos = 0;
     int round = 0;
 
+    bool block_reset = false;
+
     bool check_reset_conditions();
 
 
 
     std::string get_result_info();
+
+
 };
 
 #endif //DABURUJANPUSERVER_GAME_H

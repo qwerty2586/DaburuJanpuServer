@@ -57,7 +57,6 @@ void Game::game_loop() {
         Command *command = command_queue->remove();
         if (!command) continue;
         std::cout << "game loop " << command->code << std::endl;
-        if (!command) continue;
         switch (command->code) {
             case Commands::INTERNAL_GAME_INIT: {
                 for (int i = 0; i < players->get_list().size(); ++i) {
@@ -86,6 +85,7 @@ void Game::game_loop() {
                                 new Command(Commands::ROUND_START));
 
                     }
+                    block_reset = false;
                     ready_count = 0;
                 }
                 players->search_unlock();
@@ -98,13 +98,9 @@ void Game::game_loop() {
                 player_stats[i].update(command->args);
                 unresponded_updates++;
                 if (unresponded_updates >= update_treshold) {
-                    camera_move();
-                    std::string game_info = get_game_info();
-                    for (int j = 0; j < players->get_list().size(); ++j) {
-                        players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
-                    }
 
                     if (check_reset_conditions()) {
+                        camera_move();
                         if (game_ended()) {
                             std::string result = get_result_info();
                             for (int i = 0; i < players->get_list().size(); ++i) {
@@ -126,7 +122,14 @@ void Game::game_loop() {
                                     new Command(Commands::GAME_NEW_ROUND));
                         }
                         round++;
+                        std::cout<<"---------------------------------------NEW ROUND" << std::endl;
 
+                    } else {
+                        camera_move();
+                        std::string game_info = get_game_info();
+                        for (int j = 0; j < players->get_list().size(); ++j) {
+                            players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
+                        }
                     }
                 }
                 break;
@@ -205,9 +208,15 @@ void Game::camera_move() {
 }
 
 bool Game::check_reset_conditions() {
+    if (block_reset)
+        return false;
     int living = 0;
     for (PlayerStats st :player_stats) {
         if (!st.dead() && st.client != NULL) { living++; }
+    }
+    if (living<1) {
+        block_reset = true;
+        return true;
     }
     return living < 1; // v produkcni verzi 1
 }
