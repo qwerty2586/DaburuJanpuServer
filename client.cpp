@@ -45,8 +45,6 @@ void Client::spawn_threads() {
 }
 
 #define SIZE_BYTES 2
-#define MAX_SIZE 1024 // potom si tam udelam ze to zahodi zpravu k nejakemu ukoncovacimu znaku
-class Command;
 void Client::receving_loop() {
     char size_buffer[SIZE_BYTES];
     size_t size=0;

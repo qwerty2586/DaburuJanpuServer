@@ -37,7 +37,7 @@ int Server::start(int port) {
     memset(&local_addr, 0, sizeof(struct sockaddr_in));
 
     local_addr.sin_family = AF_INET;
-    local_addr.sin_port = htons(port);
+    local_addr.sin_port = htons((uint16_t) port);
     local_addr.sin_addr.s_addr = INADDR_ANY;
 
     int err = bind(server_sock, (struct sockaddr *) &local_addr, sizeof(struct sockaddr_in));

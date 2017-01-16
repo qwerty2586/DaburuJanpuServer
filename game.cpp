@@ -27,7 +27,7 @@ void Game::set_player_return(ClientList *server_no_lobby, CommandQueue *server_c
 }
 
 void Game::generate_seed() {
-    srand(time(NULL));
+    srand((unsigned int) time(NULL));
     for (int i = 0; i < SEED_LENGTH; ++i) {
         seed[i] = (rand() % (STEPS_TYPE_COUNT - STEPS_RESERVED_TYPES_COUNT)) + STEPS_RESERVED_TYPES_COUNT;
     }
@@ -103,8 +103,8 @@ void Game::game_loop() {
                         camera_move();
                         if (game_ended()) {
                             std::string result = get_result_info();
-                            for (int i = 0; i < players->get_list().size(); ++i) {
-                                players->get_list()[i]->send_command(
+                            for (int u = 0; u < players->get_list().size(); ++u) {
+                                players->get_list()[u]->send_command(
                                         (new Command(Commands::GAME_RESULT))->addArg(result));
                             }
                             break;
@@ -117,8 +117,8 @@ void Game::game_loop() {
                         for (int j = 0; j < players->get_list().size(); ++j) {
                             players->get_list()[j]->send_command((new Command(Commands::GAME_INFO))->addArg(game_info));
                         }
-                        for (int i = 0; i < players->get_list().size(); ++i) {
-                            players->get_list()[i]->send_command(
+                        for (int j = 0; j < players->get_list().size(); ++j) {
+                            players->get_list()[j]->send_command(
                                     new Command(Commands::GAME_NEW_ROUND));
                         }
                         round++;
