@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <sys/socket.h>
+#include <signal.h>
 
 #include "client.h"
 #include "statistics.h"
@@ -53,12 +54,14 @@ void Client::receving_loop() {
     while (1) {
         std::cout << "receiving loop" << std::endl;
         bytes_count = recv(sock_in,size_buffer,SIZE_BYTES,0);
-        if (bytes_count < 0) {
+        std::cout << bytes_count << std::endl;
+        if (bytes_count < 1) {
             close(sock_in);
             serverCommandQueue->add(new Command(this,Commands::HW_DISCONNECT));
             return;
         };
         size = ((size_t)size_buffer[0] << 8) + size_buffer[1];
+        std::cout << size << std::endl;
         char message_buffer[size];
         recv(sock_in,message_buffer,size,0);
         Statistics::add_in(size + 2);
@@ -76,6 +79,7 @@ void Client::receving_loop() {
 void Client::sending_loop() {
     char size_buffer[SIZE_BYTES];
     size_t size=0;
+    signal(SIGPIPE,SIG_IGN);
     while (1) {
         std::cout << "sending loop" << std::endl;
         clientCommandQueue->wait_for_nonempty();
@@ -83,6 +87,7 @@ void Client::sending_loop() {
         if (!command) continue; // mozna redundantni
         if (command->code == Commands::HW_DISCONNECT || command->code == Commands::SW_DISCONNECT) {
             close(sock_out);
+            std::cout << "disconnect sending loop" << std::endl;
             delete clientCommandQueue;
             if (command->code == Commands::SW_DISCONNECT) delete this;
             delete command;

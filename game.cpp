@@ -186,7 +186,7 @@ void Game::camera_move() {
     if (count > 0) { center_of_mass = center_of_mass / count; }
 
     if (center_of_mass > camerapos) {
-        camerapos += (center_of_mass - camerapos) / 4;
+        camerapos = center_of_mass;
     }
 
     for (PlayerStats &st :player_stats) {
