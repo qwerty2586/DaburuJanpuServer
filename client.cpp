@@ -47,21 +47,36 @@ void Client::spawn_threads() {
 #define SIZE_BYTES 2
 void Client::receving_loop() {
     char size_buffer[SIZE_BYTES];
-    size_t size=0;
-    ssize_t bytes_count;
+    ssize_t size=0;
+    ssize_t a=0;
+    ssize_t len;
     while (1) {
         std::cout << "receiving loop" << std::endl;
-        bytes_count = recv(sock_in,size_buffer,SIZE_BYTES,0);
-        std::cout << bytes_count << std::endl;
-        if (bytes_count < 1) {
-            close(sock_in);
-            serverCommandQueue->add(new Command(this,Commands::HW_DISCONNECT));
-            return;
-        };
+
+        len = 0;
+        while (len<SIZE_BYTES) {
+            a = recv(sock_in, size_buffer + len, SIZE_BYTES - len, 0);
+            std::cout << len << std::endl;
+            if (a < 1) {
+                close(sock_in);
+                serverCommandQueue->add(new Command(this, Commands::HW_DISCONNECT));
+                return;
+            };
+            len += a;
+        }
         size = ((size_t)size_buffer[0] << 8) + size_buffer[1];
         std::cout << size << std::endl;
         char message_buffer[size];
-        recv(sock_in,message_buffer,size,0);
+        len = 0;
+        while (len<SIZE_BYTES) {
+            a = recv(sock_in, message_buffer + len, size - len, 0);
+            if ( a<1 ) {
+                close(sock_in);
+                serverCommandQueue->add(new Command(this, Commands::HW_DISCONNECT));
+                return;
+            };
+            len += a;
+        }
         Statistics::add_in(size + 2);
         auto command = Command::fromText(this,std::string(message_buffer,size));
         if (command) {
