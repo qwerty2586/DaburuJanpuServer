@@ -68,7 +68,7 @@ void Client::receving_loop() {
         std::cout << size << std::endl;
         char message_buffer[size];
         len = 0;
-        while (len<SIZE_BYTES) {
+        while (len<size) {
             a = recv(sock_in, message_buffer + len, size - len, 0);
             if ( a<1 ) {
                 close(sock_in);
