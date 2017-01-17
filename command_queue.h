@@ -20,7 +20,6 @@ public:
 private:
     std::queue<Command *>commands;
     std::mutex mutex;
-    std::mutex mutex2;
     std::condition_variable cond;
 };
 

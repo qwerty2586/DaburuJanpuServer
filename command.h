@@ -26,8 +26,6 @@ namespace Commands {
     static const int CHANGE_COLOR = 20;
     static const int SHOW_SERVER_STATISTICS = 21;
     static const int SERVER_STATISTICS = 22;
-
-
     static const int GAME_STARTED = 30;
     static const int READY_FOR_GAME_INFO = 31;
     static const int GAME_INFO = 32;
@@ -38,7 +36,6 @@ namespace Commands {
     static const int GAME_INFO_SEED = 37;
     static const int GAME_NEW_ROUND = 38;
     static const int GAME_RESULT = 39;
-
     static const int GAME_RECONNECT_ASK = 50;
     static const int GAME_RECONNECT_ASK_RESULT = 51;
     static const int GAME_RECONNECT_DO = 52;

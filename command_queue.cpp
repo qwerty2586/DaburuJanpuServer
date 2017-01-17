@@ -24,7 +24,7 @@ Command *CommandQueue::remove() {
 
 void CommandQueue::wait_for_nonempty() {
     if (isEmpty()) {
-        std::unique_lock<std::mutex> lock(mutex2);
+        std::unique_lock<std::mutex> lock(mutex);
         cond.wait(lock);
     }
 }
